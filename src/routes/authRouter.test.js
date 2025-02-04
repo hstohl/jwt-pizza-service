@@ -6,7 +6,6 @@ const config = require("../config.js");
 
 const testUser = { name: "pizza diner", email: "reg@test.com", password: "a" };
 let testUserAuthToken;
-let testUserId;
 
 if (process.env.VSCODE_INSPECTOR_OPTIONS) {
   jest.setTimeout(60 * 1000 * 5); // 5 minutes
@@ -16,7 +15,6 @@ beforeAll(async () => {
   testUser.email = Math.random().toString(36).substring(2, 12) + "@test.com";
   const registerRes = await request(app).post("/api/auth").send(testUser);
   testUserAuthToken = registerRes.body.token;
-  testUserId = registerRes.body.user.id;
   expectValidJwt(testUserAuthToken);
 });
 
@@ -77,7 +75,7 @@ test("update user", async () => {
   });
   const token = jwt.sign(admin, config.jwtSecret);
   await DB.loginUser(admin.id, token);
-  auth = token;
+  let auth = token;
   const updateRes = await request(app)
     .put(`/api/auth/${admin.id}`)
     .set("Authorization", `Bearer ${auth}`)
