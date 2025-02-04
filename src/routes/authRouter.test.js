@@ -1,8 +1,12 @@
 const request = require("supertest");
 const app = require("../service");
+const { DB, Role } = require("../database/database.js");
+const jwt = require("jsonwebtoken");
+const config = require("../config.js");
 
 const testUser = { name: "pizza diner", email: "reg@test.com", password: "a" };
 let testUserAuthToken;
+let testUserId;
 
 if (process.env.VSCODE_INSPECTOR_OPTIONS) {
   jest.setTimeout(60 * 1000 * 5); // 5 minutes
@@ -12,6 +16,7 @@ beforeAll(async () => {
   testUser.email = Math.random().toString(36).substring(2, 12) + "@test.com";
   const registerRes = await request(app).post("/api/auth").send(testUser);
   testUserAuthToken = registerRes.body.token;
+  testUserId = registerRes.body.user.id;
   expectValidJwt(testUserAuthToken);
 });
 
@@ -59,6 +64,28 @@ test("logout", async () => {
     .set("Authorization", `Bearer ${testUserAuthToken}`);
   expect(logoutRes.status).toBe(200);
   expect(logoutRes.body.message).toBe("logout successful");
+});
+
+test("update user", async () => {
+  let adminEmail = Math.random().toString(36).substring(2, 12) + "@test.com";
+  let newEmail = Math.random().toString(36).substring(2, 12) + "@test.com";
+  const admin = await DB.addUser({
+    name: "admin",
+    email: adminEmail,
+    password: "a",
+    roles: [{ role: Role.Admin }],
+  });
+  const token = jwt.sign(admin, config.jwtSecret);
+  await DB.loginUser(admin.id, token);
+  auth = token;
+  const updateRes = await request(app)
+    .put(`/api/auth/${admin.id}`)
+    .set("Authorization", `Bearer ${auth}`)
+    .send({ email: newEmail, password: "a" });
+  expect(updateRes.status).toBe(200);
+  const expectedUser = { ...admin, roles: [{ role: "admin" }] };
+  delete expectedUser.password;
+  expect(updateRes.body.email).toBe(newEmail);
 });
 
 function expectValidJwt(potentialJwt) {
