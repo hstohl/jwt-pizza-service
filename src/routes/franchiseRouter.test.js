@@ -3,7 +3,6 @@ const app = require("../service");
 const { DB, Role } = require("../database/database.js");
 const jwt = require("jsonwebtoken");
 const config = require("../config.js");
-const { get } = require("./orderRouter.js");
 
 if (process.env.VSCODE_INSPECTOR_OPTIONS) {
   jest.setTimeout(60 * 1000 * 5); // 5 minutes
