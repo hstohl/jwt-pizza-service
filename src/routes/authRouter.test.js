@@ -19,7 +19,6 @@ beforeAll(async () => {
 });
 
 test("register", async () => {
-  let cow = 1;
   const user = { name: "pizza diner", email: "reg@test.com", password: "a" };
   user.email = Math.random().toString(36).substring(2, 12) + "@test.com";
   const regRes = await request(app).post("/api/auth").send(user);
