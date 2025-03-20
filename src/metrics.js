@@ -6,9 +6,7 @@ let users = 0;
 const authAttempts = { success: 0, failure: 0 };
 let revenue = 0;
 const orders = { success: 0, failure: 0 };
-
 const latency = { GET: [], POST: [], PUT: [], DELETE: [] };
-
 const pizzaLatencies = [];
 
 function trackMethods() {
@@ -107,13 +105,6 @@ function getMemoryUsagePercentage() {
   return memoryUsage.toFixed(2);
 }
 
-// This will periodically send metrics to Grafana
-// const timer = setInterval(() => {
-//   Object.keys(requests).forEach((endpoint) => {
-//     sendMetricToGrafana("requests", requests[endpoint], { endpoint });
-//   });
-// }, 10000);
-
 function sendMetricToGrafana(metricName, metricValue, attributes) {
   attributes = { ...attributes, source: config.metrics.source };
 
@@ -178,35 +169,27 @@ function sendMetricsPeriodically(period) {
   setInterval(() => {
     try {
       sendMetricToGrafana("cpu_usage", getCpuUsagePercentage(), {});
-
       sendMetricToGrafana("memory_usage", getMemoryUsagePercentage(), {});
-
       Object.keys(requests).forEach((method) => {
         sendMetricToGrafana("http_requests_total", requests[method], {
           method,
         });
       });
-
       sendMetricToGrafana("auth_success", authAttempts.success, {
         type: "success",
       });
       sendMetricToGrafana("auth_failure", authAttempts.failure, {
         type: "failure",
       });
-
       sendMetricToGrafana("users", users, {});
-
       sendMetricToGrafana("revenue", revenue, {});
-
       sendMetricToGrafana("order_success", orders.success, {
         type: "success",
       });
       sendMetricToGrafana("order_failure", orders.failure, {
         type: "failure",
       });
-
       sendMetricToGrafana("http_latency_ms", totalLatencyAverage(), {});
-
       sendMetricToGrafana(
         "pizza_creation_latency_ms",
         calculateAvgPizzaLatency(),
