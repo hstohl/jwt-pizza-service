@@ -21,9 +21,13 @@ app.use((req, res, next) => {
 const apiRouter = express.Router();
 app.use("/api", apiRouter);
 
-apiRouter.use("/auth", metrics.track("/auth"), authRouter);
-apiRouter.use("/order", metrics.track("/order"), orderRouter);
-apiRouter.use("/franchise", metrics.track("/franchise"), franchiseRouter);
+apiRouter.use("/auth", metrics.trackMethods("/auth"), authRouter);
+apiRouter.use("/order", metrics.trackMethods("/order"), orderRouter);
+apiRouter.use(
+  "/franchise",
+  metrics.trackMethods("/franchise"),
+  franchiseRouter
+);
 
 apiRouter.use("/docs", (req, res) => {
   res.json({
@@ -37,7 +41,7 @@ apiRouter.use("/docs", (req, res) => {
   });
 });
 
-app.get("/", metrics.track("/"), (req, res) => {
+app.get("/", metrics.trackMethods("/"), (req, res) => {
   res.json({
     message: "welcome to JWT Pizza",
     version: version.version,

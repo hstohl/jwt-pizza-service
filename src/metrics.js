@@ -1,15 +1,37 @@
-const { send } = require("process");
 const config = require("./config");
-
-const requests = {};
 
 const os = require("os");
 
-function track(endpoint) {
+const requests = { GET: 0, POST: 0, PUT: 0, DELETE: 0, ANY: 0 };
+
+let users = 0;
+
+const authAttempts = { success: 0, failure: 0 };
+
+function trackMethods() {
   return (req, res, next) => {
-    requests[endpoint] = (requests[endpoint] || 0) + 1;
+    if (requests[req.method] !== undefined) {
+      requests[req.method]++;
+      requests["ANY"]++;
+    }
     next();
   };
+}
+
+function userAdded() {
+  users++;
+}
+
+function userRemoved() {
+  users--;
+}
+
+function trackAuthSuccess() {
+  authAttempts.success++;
+}
+
+function trackAuthFailure() {
+  authAttempts.failure++;
 }
 
 function getCpuUsagePercentage() {
@@ -93,15 +115,26 @@ function sendMetricToGrafana(metricName, metricValue, attributes) {
 }
 
 function sendMetricsPeriodically(period) {
-  const timer = setInterval(() => {
+  setInterval(() => {
     try {
-      //console.log("CPU Usage:", getCpuUsagePercentage());
       sendMetricToGrafana("cpu_usage", getCpuUsagePercentage(), {});
-      //console.log("Memory Usage:", getMemoryUsagePercentage());
+
       sendMetricToGrafana("memory_usage", getMemoryUsagePercentage(), {});
-      Object.keys(requests).forEach((endpoint) => {
-        sendMetricToGrafana("requests", requests[endpoint], { endpoint });
+
+      Object.keys(requests).forEach((method) => {
+        sendMetricToGrafana("http_requests_total", requests[method], {
+          method,
+        });
       });
+
+      sendMetricToGrafana("auth_success", authAttempts.success, {
+        type: "success",
+      });
+      sendMetricToGrafana("auth_failure", authAttempts.failure, {
+        type: "failure",
+      });
+
+      sendMetricToGrafana("users", users, {});
     } catch (error) {
       console.log("Error sending metrics", error);
     }
@@ -110,4 +143,10 @@ function sendMetricsPeriodically(period) {
 
 sendMetricsPeriodically(10000);
 
-module.exports = { track };
+module.exports = {
+  trackMethods,
+  trackAuthSuccess,
+  trackAuthFailure,
+  userAdded,
+  userRemoved,
+};
