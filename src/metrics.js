@@ -219,4 +219,6 @@ module.exports = {
   trackBusiness,
   trackOrderFailure,
   trackPizzaCreation,
+  totalLatencyAverage,
+  calculateAvgPizzaLatency,
 };
