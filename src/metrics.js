@@ -1,25 +1,72 @@
 const config = require("./config");
-
 const os = require("os");
 
 const requests = { GET: 0, POST: 0, PUT: 0, DELETE: 0, ANY: 0 };
-
 let users = 0;
-
 const authAttempts = { success: 0, failure: 0 };
-
 let revenue = 0;
-
 const orders = { success: 0, failure: 0 };
+
+const latency = { GET: [], POST: [], PUT: [], DELETE: [] };
+
+const pizzaLatencies = [];
 
 function trackMethods() {
   return (req, res, next) => {
-    if (requests[req.method] !== undefined) {
-      requests[req.method]++;
-      requests["ANY"]++;
-    }
+    const start = process.hrtime();
+    res.on("finish", () => {
+      if (requests[req.method] !== undefined) {
+        requests[req.method]++;
+        requests["ANY"]++;
+      }
+      const duration = process.hrtime(start);
+      const timeInMs = duration[0] * 1000 + duration[1] / 1e6;
+      if (latency[req.method]) latency[req.method].push(timeInMs);
+
+      if (latency[req.method].length > 100) {
+        latency[req.method].shift();
+      }
+    });
     next();
   };
+}
+
+function trackPizzaCreation(fn) {
+  return async (...args) => {
+    const start = process.hrtime();
+    const result = await fn(...args); // Call the actual pizza creation function
+    const duration = process.hrtime(start);
+
+    const timeInMs = duration[0] * 1000 + duration[1] / 1e6;
+    pizzaLatencies.push(timeInMs);
+
+    if (pizzaLatencies.length > 100) {
+      pizzaLatencies.shift();
+    }
+
+    return result;
+  };
+}
+
+function calculateAvgLatency(method) {
+  if (!latency[method] || latency[method].length === 0) return 0;
+  const total = latency[method].reduce((sum, val) => sum + val, 0);
+  return total / latency[method].length;
+}
+
+function calculateAvgPizzaLatency() {
+  if (pizzaLatencies.length === 0) return 0;
+  const total = pizzaLatencies.reduce((sum, val) => sum + val, 0);
+  return total / pizzaLatencies.length;
+}
+
+function totalLatencyAverage() {
+  let total =
+    calculateAvgLatency("GET") +
+    calculateAvgLatency("POST") +
+    calculateAvgLatency("PUT") +
+    calculateAvgLatency("DELETE");
+  return total / 4;
 }
 
 function userAdded() {
@@ -39,7 +86,6 @@ function trackAuthFailure() {
 }
 
 function trackBusiness(amount) {
-  console.log("One Order Amount: ", amount);
   revenue += amount;
   orders.success++;
 }
@@ -150,17 +196,22 @@ function sendMetricsPeriodically(period) {
 
       sendMetricToGrafana("users", users, {});
 
-      console.log("revenue", revenue);
       sendMetricToGrafana("revenue", revenue, {});
 
-      console.log("order_success: ", orders.success);
-      console.log("order_failure: ", orders.failure);
       sendMetricToGrafana("order_success", orders.success, {
         type: "success",
       });
       sendMetricToGrafana("order_failure", orders.failure, {
         type: "failure",
       });
+
+      sendMetricToGrafana("http_latency_ms", totalLatencyAverage(), {});
+
+      sendMetricToGrafana(
+        "pizza_creation_latency_ms",
+        calculateAvgPizzaLatency(),
+        {}
+      );
     } catch (error) {
       console.log("Error sending metrics", error);
     }
@@ -177,4 +228,5 @@ module.exports = {
   userRemoved,
   trackBusiness,
   trackOrderFailure,
+  trackPizzaCreation,
 };
