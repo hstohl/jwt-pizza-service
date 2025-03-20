@@ -8,6 +8,10 @@ let users = 0;
 
 const authAttempts = { success: 0, failure: 0 };
 
+let revenue = 0;
+
+const orders = { success: 0, failure: 0 };
+
 function trackMethods() {
   return (req, res, next) => {
     if (requests[req.method] !== undefined) {
@@ -32,6 +36,16 @@ function trackAuthSuccess() {
 
 function trackAuthFailure() {
   authAttempts.failure++;
+}
+
+function trackBusiness(amount) {
+  console.log("One Order Amount: ", amount);
+  revenue += amount;
+  orders.success++;
+}
+
+function trackOrderFailure() {
+  orders.failure++;
 }
 
 function getCpuUsagePercentage() {
@@ -135,6 +149,18 @@ function sendMetricsPeriodically(period) {
       });
 
       sendMetricToGrafana("users", users, {});
+
+      console.log("revenue", revenue);
+      sendMetricToGrafana("revenue", revenue, {});
+
+      console.log("order_success: ", orders.success);
+      console.log("order_failure: ", orders.failure);
+      sendMetricToGrafana("order_success", orders.success, {
+        type: "success",
+      });
+      sendMetricToGrafana("order_failure", orders.failure, {
+        type: "failure",
+      });
     } catch (error) {
       console.log("Error sending metrics", error);
     }
@@ -149,4 +175,6 @@ module.exports = {
   trackAuthFailure,
   userAdded,
   userRemoved,
+  trackBusiness,
+  trackOrderFailure,
 };
