@@ -1,4 +1,3 @@
-const request = require("supertest");
 const metrics = require("./metrics.js");
 
 test("latency metric", async () => {
