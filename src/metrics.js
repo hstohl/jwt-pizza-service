@@ -170,26 +170,33 @@ function sendMetricsPeriodically(period) {
     try {
       sendMetricToGrafana("cpu_usage", getCpuUsagePercentage(), {});
       sendMetricToGrafana("memory_usage", getMemoryUsagePercentage(), {});
+
       Object.keys(requests).forEach((method) => {
         sendMetricToGrafana("http_requests_total", requests[method], {
           method,
         });
       });
+
       sendMetricToGrafana("auth_success", authAttempts.success, {
         type: "success",
       });
       sendMetricToGrafana("auth_failure", authAttempts.failure, {
         type: "failure",
       });
+
       sendMetricToGrafana("users", users, {});
+
       sendMetricToGrafana("revenue", revenue, {});
+
       sendMetricToGrafana("order_success", orders.success, {
         type: "success",
       });
       sendMetricToGrafana("order_failure", orders.failure, {
         type: "failure",
       });
+
       sendMetricToGrafana("http_latency_ms", totalLatencyAverage(), {});
+
       sendMetricToGrafana(
         "pizza_creation_latency_ms",
         calculateAvgPizzaLatency(),
