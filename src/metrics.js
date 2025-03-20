@@ -221,4 +221,6 @@ module.exports = {
   trackPizzaCreation,
   totalLatencyAverage,
   calculateAvgPizzaLatency,
+  getCpuUsagePercentage,
+  getMemoryUsagePercentage,
 };
