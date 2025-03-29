@@ -56,12 +56,12 @@ jobs:
               apiKey: '${{ secrets.FACTORY_API_KEY }}',
             },
             metrics: {
-              source: 'jwt-pizza-service',
+              source: 'jwt-pizza-service-dev',
               url: '${{ secrets.METRICS_URL }}',
               apiKey: '${{ secrets.METRICS_API_KEY }}',
             },  
             logging:    {
-              source: 'jwt-pizza-service',
+              source: 'jwt-pizza-service-dev',
               userId: ${{ secrets.LOGGING_USER_ID }},
               url: '${{ secrets.LOGGING_URL }}',
               apiKey: '${{ secrets.LOGGING_API_KEY }}',
