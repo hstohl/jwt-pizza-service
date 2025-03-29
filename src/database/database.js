@@ -386,7 +386,7 @@ class DB {
   }
 
   async query(connection, sql, params) {
-    logger.log("info", "sql query", { sql, params });
+    logger.log("info", "db", sql);
     const [results] = await connection.execute(sql, params);
     return results;
   }

@@ -11,6 +11,7 @@ class Logger {
         statusCode: res.statusCode,
         reqBody: JSON.stringify(req.body),
         resBody: JSON.stringify(resBody),
+        ip: req.ip,
       };
       const level = this.statusToLogLevel(res.statusCode);
       this.log(level, "http", logData);

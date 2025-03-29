@@ -149,8 +149,8 @@ orderRouter.post(
       for (const item of order.items) {
         orderPrice += item.price;
       }
-      logger.log("info", "order", {
-        dinerId: req.user.id,
+      logger.log("info", "factory", {
+        diner: { id: req.user.id, name: req.user.name, email: req.user.email },
         price: orderPrice,
         order: order,
       });
