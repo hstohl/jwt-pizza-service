@@ -8,6 +8,7 @@ const {
   trackOrderFailure,
   trackPizzaCreation,
 } = require("../metrics");
+const logger = require("../logger.js");
 
 const orderRouter = express.Router();
 
@@ -148,6 +149,11 @@ orderRouter.post(
       for (const item of order.items) {
         orderPrice += item.price;
       }
+      logger.log("info", "order", {
+        dinerId: req.user.id,
+        price: orderPrice,
+        order: order,
+      });
       trackBusiness(orderPrice);
       res.send({ order, reportSlowPizzaToFactoryUrl: j.reportUrl, jwt: j.jwt });
     } else {
