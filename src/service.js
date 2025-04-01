@@ -6,10 +6,10 @@ const franchiseRouter = require("./routes/franchiseRouter.js");
 const version = require("./version.json");
 const config = require("./config.js");
 const logger = require("./logger");
-const cors = require("cors");
+//const cors = require("cors");
 
 const app = express();
-app.use(cors({ origin: "https://pizza.hudson-stohl.click" }));
+//app.use(cors({ origin: "https://pizza.hudson-stohl.click" }));
 app.use(express.json());
 app.use(setAuthUser);
 
