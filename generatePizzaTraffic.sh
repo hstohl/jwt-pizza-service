@@ -55,16 +55,16 @@ while true; do
 done &
 pid3=$!
 
-# Simulate a diner ordering a pizza every 50 seconds
+# Simulate a diner ordering a pizza every 25 seconds
 while true; do
   token=$(login "d@jwt.com" "diner")
   echo "Login diner..." $( [ -z "$token" ] && echo "false" || echo "true" )
   result=$(execute_curl "-X POST $host/api/order -H 'Content-Type: application/json' -d '{\"franchiseId\": 1, \"storeId\":1, \"items\":[{ \"menuId\": 1, \"description\": \"Veggie\", \"price\": 0.05 }]}'  -H \"Authorization: Bearer $token\"")
   echo "Bought a pizza..." $result
-  sleep 20
+  sleep 10
   result=$(execute_curl "-X DELETE $host/api/auth -H \"Authorization: Bearer $token\"")
   echo "Logging out diner..." $result
-  sleep 30
+  sleep 15
 done &
 pid4=$!
 

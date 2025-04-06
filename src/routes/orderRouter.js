@@ -121,6 +121,7 @@ orderRouter.put(
 
 orderRouter.post("/", (req, res, next) => {
   if (enableChaos && Math.random() < 0.5) {
+    trackOrderFailure();
     throw new StatusCodeError("Chaos monkey", 500);
   }
   next();
